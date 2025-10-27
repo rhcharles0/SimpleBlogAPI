@@ -22,11 +22,12 @@ public class UsersService {
         );
     }
     Page<UserDto> getUsers(final Integer offset){
-        Pageable pageable = PageRequest.of(offset,10);
-        return usersRepository.findAllBy(pageable, UserDto.class);
+        int pageSize = 10;
+        Pageable pageable = PageRequest.of(offset,pageSize);
+        return usersRepository.findAllByOrderByCreatedAtDesc(pageable);
+
     }
 
-    //TODO create
     @Modifying
     @Transactional
     void create(final UserDto userDto){
@@ -40,7 +41,6 @@ public class UsersService {
         usersRepository.save(user);
     }
 
-    //TODO delete
     void delete(final String email){
         Users user = usersRepository.findByEmail(email).orElseThrow(
                 () -> new NotFoundResourceException("Not found user by email")
@@ -48,7 +48,6 @@ public class UsersService {
         usersRepository.delete(user);
     }
 
-    //TODO update put
     UserDto update(final String email, final UserDto userDto){
         Users user = usersRepository.findByEmail(email).orElseThrow(
                 () -> new NotFoundResourceException("Not found user by email")
