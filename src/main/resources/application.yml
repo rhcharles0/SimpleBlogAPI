@@ -1,4 +1,7 @@
 spring:
+# Import .env file
+  config:
+    import: optional:file:.env[.properties]
   output:
     ansi:
       enabled: always
@@ -10,3 +13,10 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  security:
+    oauth2:
+      resourceserver:
+        opaquetoken:
+          introspection-uri: ${INTROSPECTION_URI}
+          client-id: ""
+          client-secret: ""
