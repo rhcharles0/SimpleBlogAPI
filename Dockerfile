@@ -7,8 +7,7 @@ COPY src ./src
 
 RUN gradle --no-daemon clean build -x test
 
-COPY ./build/libs/app.jar ./app.jar
-RUN java -Djarmode=tools -jar app.jar extract --layers --destination ./extracted
+RUN java -Djarmode=tools -jar ./build/libs/app.jar extract --layers --destination ./extracted
 
 FROM bellsoft/liberica-openjre-alpine:25-cds
 EXPOSE 8080
