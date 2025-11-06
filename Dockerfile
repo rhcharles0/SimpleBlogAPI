@@ -6,7 +6,8 @@ COPY build.gradle settings.gradle ./
 COPY src ./src
 
 RUN gradle --no-daemon clean build -x test
-COPY /build/libs/*.jar ./app.jar
+
+COPY ./build/libs/app.jar ./app.jar
 RUN java -Djarmode=tools -jar app.jar extract --layers --destination ./extracted
 
 FROM bellsoft/liberica-openjre-alpine:25-cds
