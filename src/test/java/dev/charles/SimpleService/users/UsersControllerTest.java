@@ -2,6 +2,9 @@ package dev.charles.SimpleService.users;
 
 import dev.charles.SimpleService.errors.errorcode.CommonErrorCode;
 import dev.charles.SimpleService.errors.errorcode.ErrorCode;
+import dev.charles.SimpleService.users.controller.UsersController;
+import dev.charles.SimpleService.users.dto.UserDto;
+import dev.charles.SimpleService.users.service.UsersService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,7 +14,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.util.LinkedMultiValueMap;

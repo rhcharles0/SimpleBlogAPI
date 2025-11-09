@@ -1,6 +1,10 @@
 package dev.charles.SimpleService.users;
 
 
+import dev.charles.SimpleService.users.domain.Users;
+import dev.charles.SimpleService.users.dto.UserDto;
+import dev.charles.SimpleService.users.repository.UsersRepository;
+import dev.charles.SimpleService.users.service.UsersService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -10,7 +14,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
@@ -19,25 +22,27 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UsersServiceTest{
     @InjectMocks
     private UsersService usersService;
     @Mock
-    private UsersQueryRepository usersRepository;
+    private UsersRepository usersRepository;
 
     @Nested
     @DisplayName("Given there are two registered users")
     public class RegisteredTwoUsersTest{
         //GIVEN
         private UserDto mikeDto;
+        private Users mike;
 
         @BeforeEach
         void setup(){
             mikeDto = new UserDto("mike","mike@gmail.com");
+            mike = Users.of(mikeDto);
         }
         @Nested
         @DisplayName("When use service")
@@ -47,12 +52,12 @@ class UsersServiceTest{
             public void UserGetTest() {
                 //given
                 String targetEmail = "mike@gmail.com";
-                given(usersRepository.findByEmailDto("mike@gmail.com"))
-                        .willReturn(mikeDto);
+                given(usersRepository.findByEmail("mike@gmail.com", UserDto.class))
+                        .willReturn(Optional.of(mikeDto));
                 //when
                 UserDto result = usersService.getUserByEmail(targetEmail);
                 // then
-                verify(usersRepository).findByEmailDto(targetEmail);
+                verify(usersRepository, times(1)).findByEmail(targetEmail, UserDto.class);
                 assertThat(result).extracting("email", "username")
                         .contains("mike","mike@gmail.com");
             }
@@ -76,7 +81,7 @@ class UsersServiceTest{
                         new UserDto("user10", "u10@mail.com")
                 );
                 // Given: Repository가 targetOffset으로 호출되면 mockPage를 반환하도록 설정
-                given(usersRepository.paginationUsers("user",
+                given(usersRepository.findAllByKeyword("user",
                         PageRequest.of(targetOffset, pageSize)
                 )).willReturn(pageContent);
 
@@ -97,10 +102,12 @@ class UsersServiceTest{
             @Test
             @DisplayName("Then find the user entity by email and then the entity is deleted")
             void UserDeleteTest() {
+                //given
+                given(usersRepository.findByEmail(any())).willReturn(Optional.of(mike));
                 // when
                 usersService.delete("mike@gmail.com");
                 // then
-                verify(usersRepository).delete(any());
+                verify(usersRepository, times(1)).delete(any());
             }
 
             @Test
@@ -108,11 +115,13 @@ class UsersServiceTest{
             void UserUpdate(){
                 //given
                 UserDto newDto = new UserDto("mike2", "mike2@gmail.com");
+                given(usersRepository.findByEmail("mike@gmail.com")).willReturn(Optional.ofNullable(mike));
                 // when
                 usersService.update("mike@gmail.com", newDto);
                 // then
-                verify(usersRepository).checkByEmail("mike@gmail.com");
-                verify(usersRepository).update(newDto);
+                assertThat(mike.getEmail()).isEqualTo(newDto.getEmail());
+                assertThat(mike.getUsername()).isEqualTo(newDto.getUsername());
+                verify(usersRepository, times(2)).findByEmail(any());
             }
 
 
