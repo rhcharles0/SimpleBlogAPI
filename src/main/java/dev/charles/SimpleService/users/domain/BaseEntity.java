@@ -1,4 +1,4 @@
-package dev.charles.SimpleService.users;
+package dev.charles.SimpleService.users.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
@@ -13,7 +13,7 @@ import java.time.Instant;
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", updatable = false)
     @CreatedDate
     private Instant createdAt;
 

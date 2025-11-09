@@ -1,10 +1,11 @@
-package dev.charles.SimpleService.users;
+package dev.charles.SimpleService.users.controller;
 
+import dev.charles.SimpleService.users.dto.UserDto;
+import dev.charles.SimpleService.users.service.UsersService;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.web.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

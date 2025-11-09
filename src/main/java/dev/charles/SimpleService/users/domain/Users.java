@@ -1,5 +1,6 @@
-package dev.charles.SimpleService.users;
+package dev.charles.SimpleService.users.domain;
 
+import dev.charles.SimpleService.users.dto.UserDto;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,11 +19,18 @@ public class Users extends BaseEntity{
     @Column(nullable = false)
     private String email;
 
-    @Builder
+    @Version
+    private Long version;
+
+    public static Users of(UserDto userDto){
+        return new Users(userDto.getUsername(), userDto.getEmail());
+    }
+
     public Users(String username, String email){
         this.username = username;
         this.email = email;
     }
+
 
     public void update(UserDto userDto){
         this.username = userDto.getUsername();

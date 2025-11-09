@@ -1,7 +1,6 @@
-package dev.charles.SimpleService.users;
+package dev.charles.SimpleService.users.dto;
 
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.querydsl.core.annotations.QueryProjection;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
