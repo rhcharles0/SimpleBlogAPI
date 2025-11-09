@@ -1,14 +1,18 @@
 package dev.charles.SimpleService.errors.handler;
 
+import dev.charles.SimpleService.errors.errorcode.CustomErrorCode;
 import dev.charles.SimpleService.errors.exception.RestApiException;
 import dev.charles.SimpleService.errors.response.ErrorResponse;
 import dev.charles.SimpleService.errors.errorcode.CommonErrorCode;
 import dev.charles.SimpleService.errors.errorcode.ErrorCode;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.ValidationException;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -35,6 +39,20 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         final ErrorCode errorCode = e.getErrorCode();
         return handleExceptionInternal(errorCode);
     }
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<Object> handleAuthorizationException(final AuthorizationDeniedException e) {
+        log.warn("handleAuthorization", e);
+        final ErrorCode errorCode = CustomErrorCode.NOT_AUTHORIZED;
+        return handleExceptionInternal(errorCode, e.getMessage());
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Object> handleConstraintViolationException(final ConstraintViolationException e) {
+        ErrorCode errorCode = CommonErrorCode.INVALID_PARAMETER;
+        return handleExceptionInternal(e, errorCode);
+    }
+
 
     @Override
     public ResponseEntity<Object> handleMethodArgumentNotValid(
@@ -81,6 +99,23 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     private ResponseEntity<Object> handleExceptionInternal(BindException e, ErrorCode errorCode) {
         return ResponseEntity.status(errorCode.getHttpStatus())
                 .body(makeErrorResponse(e, errorCode));
+    }
+    private ResponseEntity<Object> handleExceptionInternal(ConstraintViolationException e, ErrorCode errorCode) {
+        return ResponseEntity.status(errorCode.getHttpStatus())
+                .body(makeErrorResponse(e, errorCode));
+    }
+    private ErrorResponse makeErrorResponse(ConstraintViolationException e, ErrorCode errorCode) {
+        List<ErrorResponse.ValidationError> validationErrorList = e
+                .getConstraintViolations()
+                .stream()
+                .map(ErrorResponse.ValidationError::of)
+                .collect(Collectors.toList());
+
+        return ErrorResponse.builder()
+                .code(errorCode.name())
+                .message(errorCode.getMessage())
+                .errors(validationErrorList)
+                .build();
     }
 
     private ErrorResponse makeErrorResponse(BindException e, ErrorCode errorCode) {

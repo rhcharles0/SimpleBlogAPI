@@ -9,7 +9,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
-abstract class AbstractIntegrationTest {
+public abstract class AbstractIntegrationTest {
 
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
 

@@ -1,4 +1,4 @@
-package dev.charles.SimpleService.security.introspector;
+package dev.charles.SimpleService.utils.security.introspector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -13,7 +13,6 @@ import org.springframework.security.oauth2.core.OAuth2TokenIntrospectionClaimNam
 import org.springframework.security.oauth2.server.resource.introspection.*;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestOperations;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.Serial;
 import java.net.URI;
@@ -45,7 +44,6 @@ public class GoogleOpaqueTokenIntrospector implements OpaqueTokenIntrospector {
 
     private Converter<String, RequestEntity<?>> defaultRequestEntityConverter(String introspectionUri) {
         return (token) -> {
-//            HttpHeaders headers = requestHeaders();
             URI parameterizedUri = URI.create(introspectionUri + "?access_token=" + token);
             return new RequestEntity<>( HttpMethod.GET, parameterizedUri);
         };
@@ -61,17 +59,6 @@ public class GoogleOpaqueTokenIntrospector implements OpaqueTokenIntrospector {
         Map<String, Object> claims = adaptToNimbusResponse(responseEntity);
         OAuth2TokenIntrospectionClaimAccessor accessor = convertClaimsSet(claims);
         return this.authenticationConverter.convert(accessor);
-    }
-
-    /**
-     * Sets the {@link Converter} used for converting the OAuth 2.0 access token to a
-     * {@link RequestEntity} representation of the OAuth 2.0 token introspection request.
-     * @param requestEntityConverter the {@link Converter} used for converting to a
-     * {@link RequestEntity} representation of the token introspection request
-     */
-    public void setRequestEntityConverter(Converter<String, RequestEntity<?>> requestEntityConverter) {
-        Assert.notNull(requestEntityConverter, "requestEntityConverter cannot be null");
-        this.requestEntityConverter = requestEntityConverter;
     }
 
     private ResponseEntity<Map<String, Object>> makeRequest(RequestEntity<?> requestEntity) {
@@ -140,25 +127,6 @@ public class GoogleOpaqueTokenIntrospector implements OpaqueTokenIntrospector {
     }
 
     /**
-     * <p>
-     * Sets the {@link Converter Converter&lt;OAuth2TokenIntrospectionClaimAccessor,
-     * OAuth2AuthenticatedPrincipal&gt;} to use. Defaults to
-     * {@link GoogleOpaqueTokenIntrospector#defaultAuthenticationConverter}.
-     * </p>
-     * <p>
-     * Use if you need a custom mapping of OAuth 2.0 token claims to the authenticated
-     * principal.
-     * </p>
-     * @param authenticationConverter the converter
-     * @since 6.3
-     */
-    public void setAuthenticationConverter(
-            Converter<OAuth2TokenIntrospectionClaimAccessor, ? extends OAuth2AuthenticatedPrincipal> authenticationConverter) {
-        Assert.notNull(authenticationConverter, "converter cannot be null");
-        this.authenticationConverter = authenticationConverter;
-    }
-
-    /**
      * If {@link GoogleOpaqueTokenIntrospector#authenticationConverter} is not explicitly
      * set, this default converter will be used. transforms an
      * {@link OAuth2TokenIntrospectionClaimAccessor} into an
@@ -183,18 +151,6 @@ public class GoogleOpaqueTokenIntrospector implements OpaqueTokenIntrospector {
             authorities.add(new SimpleGrantedAuthority(AUTHORITY_PREFIX + scope));
         }
         return authorities;
-    }
-
-    /**
-     * Creates a {@code SpringOpaqueTokenIntrospector.Builder} with the given
-     * introspection endpoint uri
-     * @param introspectionUri The introspection endpoint uri
-     * @return the {@link GoogleOpaqueTokenIntrospector.Builder}
-     * @since 6.5
-     */
-    public static Builder withIntrospectionUri(String introspectionUri) {
-        Assert.notNull(introspectionUri, "introspectionUri cannot be null");
-        return new Builder(introspectionUri);
     }
 
     // gh-7563
@@ -223,22 +179,4 @@ public class GoogleOpaqueTokenIntrospector implements OpaqueTokenIntrospector {
 
     }
 
-    /**
-     * Used to build {@link GoogleOpaqueTokenIntrospector}.
-     *
-     * @author Ngoc Nhan
-     * @since 6.5
-     */
-    public static final class Builder {
-        private final String introspectionUri;
-
-        private Builder(String introspectionUri) {
-            this.introspectionUri = introspectionUri;
-        }
-
-        public GoogleOpaqueTokenIntrospector build() {
-            RestTemplate restTemplate = new RestTemplate();
-            return new GoogleOpaqueTokenIntrospector(this.introspectionUri, restTemplate);
-        }
-    }
 }

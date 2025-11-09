@@ -1,5 +1,4 @@
 spring:
-# Import .env file
   config:
     import: optional:file:.env[.properties]
   output:
@@ -7,7 +6,7 @@ spring:
       enabled: always
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: true
     open-in-view: false
     properties:
@@ -20,3 +19,6 @@ spring:
           introspection-uri: ${INTROSPECTION_URI}
           client-id: ""
           client-secret: ""
+
+server:
+  port: 8081

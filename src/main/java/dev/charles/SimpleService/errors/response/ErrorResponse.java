@@ -1,6 +1,7 @@
 package dev.charles.SimpleService.errors.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.validation.ConstraintViolation;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -24,14 +25,21 @@ public class ErrorResponse {
     @RequiredArgsConstructor
     public static class ValidationError {
 
-        private final String field;
+        private final String property;
         private final String message;
 
         public static ValidationError of(final FieldError fieldError) {
-            return ValidationError.builder()
-                    .field(fieldError.getField())
-                    .message(fieldError.getDefaultMessage())
-                    .build();
+            String field = fieldError.getField();
+            String message = fieldError.getDefaultMessage();
+            return create(field, message);
+        }
+        public static ValidationError of(final ConstraintViolation<?> fieldError) {
+            String field = String.valueOf(fieldError.getPropertyPath());
+            String message = fieldError.getMessage();
+            return create(field, message);
+        }
+        private static ValidationError create(String field, String message) {
+            return new ValidationError(field, message);
         }
     }
 }

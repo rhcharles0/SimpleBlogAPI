@@ -1,20 +1,22 @@
 package dev.charles.SimpleService.users;
 
-import dev.charles.SimpleService.AbstractJpaRepositoryTest;
+import dev.charles.SimpleService.AbstractIntegrationTest;
+import dev.charles.SimpleService.users.domain.Users;
+import dev.charles.SimpleService.users.dto.UserDto;
+import dev.charles.SimpleService.users.repository.UsersRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class UsersRepositoryTest extends AbstractJpaRepositoryTest {
+public class UsersRepositoryTest extends AbstractIntegrationTest {
     @Autowired
     private UsersRepository usersRepository;
 
@@ -24,74 +26,57 @@ public class UsersRepositoryTest extends AbstractJpaRepositoryTest {
     @BeforeEach
     void setUp() {
         usersRepository.deleteAll();
-
-        user1 = Users.builder()
-                .email("test1@email.com")
-                .username("testUser").build();
-        user2 =  Users.builder()
-                .email("test2@email.com")
-                .username("testUser2").build();
-
+        UserDto userDto1 = new UserDto("test1@email.com","user1");
+        UserDto userDto2 = new UserDto("test2@email.com","user2");
+        user1 = Users.of(userDto1);
+        user2 = Users.of(userDto2);
         usersRepository.save(user1);
         usersRepository.save(user2);
     }
+
+    @Test
+    @DisplayName("Save user ")
+    void save() {
+        UserDto userDto = new UserDto("test3@email.com","user3");
+        Users user = Users.of(userDto);
+
+        usersRepository.save(user);
+
+        assertThat(usersRepository.count()).isEqualTo(3);
+    }
+
+
     @Test
     @DisplayName("Get a user by email")
     void findByEmail_shouldReturnUsersEntity() {
         // When
-        Optional<Users> foundUser = usersRepository.findByEmail("test1@email.com");
+        Users foundUser = usersRepository.findByEmail("test1@email.com").orElseThrow();
 
         // Then
-        assertThat(foundUser).isPresent();
-        assertThat(foundUser.get().getUsername()).isEqualTo("testUser");
-    }
-
-    @Test
-    @DisplayName("Get a userDto by email")
-    void findByEmail_withProjection_shouldReturnDto() {
-        // When
-        Optional<UserDto> foundDto = usersRepository.findByEmail("test2@email.com", UserDto.class);
-
-        // Then
-        assertThat(foundDto).isPresent();
-        assertThat(foundDto.get().email()).isEqualTo("test2@email.com");
-        // UserDto는 name 필드를 가질 것으로 가정
-        assertThat(foundDto.get().username()).isEqualTo("testUser2");
-
-        // 엔티티가 아닌 DTO 객체인지 확인 (null이면 엔티티인 경우가 있음)
-        assertThat(foundDto.get()).isInstanceOf(UserDto.class);
+        assertThat(foundUser.getEmail()).isEqualTo("test1@email.com");
+        assertThat(foundUser.getUsername()).isEqualTo("user1");
     }
 
     @Test
     @DisplayName("Get pagination of users that is sorted by creation date descending (newest first)")
     void findAllByOrderByCreatedAtDesc_shouldReturnPagedData() {
         // Given
-        Pageable pageable = PageRequest.of(0, 1); // 0페이지, 사이즈 1
-
+        Pageable pageable = PageRequest.of(0, 5); // 0페이지, 사이즈 1
         // When
-        Page<UserDto> userPage = usersRepository.findAllByOrderByCreatedAtDesc(pageable);
-
+        List<UserDto> userPage = usersRepository.findAllByKeyword("", pageable);
         // Then
-        assertThat(userPage.getTotalElements()).isEqualTo(2);
-        assertThat(userPage.getContent()).hasSize(1);
-        assertThat(userPage.getContent().get(0).username()).isEqualTo("testUser2");
-        assertThat(userPage.isFirst()).isTrue();
+        assertThat(userPage.size()).isEqualTo(2);
+        assertThat(userPage.get(0)).extracting("email","username")
+                .contains("test2@email.com","user2");
     }
 
     @Test
-    @DisplayName("Get page of users")
-    void findAllByOrderByCreatedAtDesc_shouldReturnNextPage() {
-        // Given
-        Pageable pageable = PageRequest.of(1, 1); // 1페이지, 사이즈 1
+    @DisplayName("Delete user from repository with having two users")
+    void delete_user() {
+        Users seleted = usersRepository.findByEmail("test1@email.com").orElseThrow();
+        usersRepository.delete(seleted);
 
-        // When
-        Page<UserDto> userPage = usersRepository.findAllByOrderByCreatedAtDesc(pageable);
-
-        // Then
-        assertThat(userPage.getTotalElements()).isEqualTo(2);
-        assertThat(userPage.getContent()).hasSize(1);
-        assertThat(userPage.getContent().get(0).username()).isEqualTo("testUser");
-        assertThat(userPage.isLast()).isTrue();
+        assertThat(usersRepository.count()).isEqualTo(1);
     }
 
 }
