@@ -5,9 +5,11 @@ import com.querydsl.core.annotations.QueryProjection;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
+import org.springframework.data.annotation.PersistenceCreator;
 
 @Getter
 @NoArgsConstructor
@@ -24,7 +26,8 @@ public class UserDto {
     @NotBlank(message = "이메일은 필수입니다.")
     private String email;
 
-    @QueryProjection
+    @PersistenceCreator
+    @Builder
     public UserDto(String email, String username) {
         this.email = email;
         this.username = username;

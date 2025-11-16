@@ -6,8 +6,11 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.web.PagedModel;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
@@ -16,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@RequestMapping(path = "/api/users", produces = "application/json")
+@RequestMapping(path = "/api/users", produces = MediaType.APPLICATION_JSON_VALUE)
 @Validated
 @RequiredArgsConstructor
 public class UsersController {
@@ -47,7 +50,7 @@ public class UsersController {
      */
 
     @GetMapping("/paged")
-    ResponseEntity<PagedModel<UserDto>> getUsers(
+    ResponseEntity<Page<UserDto>> getUsers(
             @RequestParam(value = "keyword", required = false, defaultValue = "")
             final String keyword,
             @Min(value = 0, message = "최소 0 이상입니다.")
@@ -55,7 +58,7 @@ public class UsersController {
             final Integer offset,
             @RequestParam(required = false)
             final Long total){
-        PagedModel<UserDto> users = new PagedModel<>(usersService.getUsers(keyword, offset, total));
+        Page<UserDto> users = usersService.getUsers(keyword, offset, total);
         return new ResponseEntity<>(users,HttpStatus.OK);
     }
 

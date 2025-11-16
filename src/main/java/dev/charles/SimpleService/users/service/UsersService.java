@@ -30,7 +30,7 @@ public class UsersService {
         int pageSize = 10;
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
         List<UserDto> userDtoList =  usersRepository.findAllByKeyword(keyword, pageable);
-        long totalCount = Optional.ofNullable(total).orElse(usersRepository.countByKeyword(keyword));
+        long totalCount = Optional.ofNullable(total).orElseGet(()->usersRepository.countByKeyword(keyword));
         return new PageImpl<>(userDtoList, pageable, totalCount);
     }
 
