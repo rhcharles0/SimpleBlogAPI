@@ -1,5 +1,6 @@
 package dev.charles.SimpleService.users;
 
+import dev.charles.SimpleService.TestWebConfig;
 import dev.charles.SimpleService.errors.errorcode.CommonErrorCode;
 import dev.charles.SimpleService.errors.errorcode.ErrorCode;
 import dev.charles.SimpleService.users.controller.UsersController;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -34,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(UsersController.class)
-@DisplayName("UsersController Test")
+@Import(TestWebConfig.class)
 class UsersControllerTest {
 
     @Autowired
