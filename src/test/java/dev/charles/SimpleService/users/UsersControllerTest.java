@@ -1,25 +1,24 @@
 package dev.charles.SimpleService.users;
 
-import dev.charles.SimpleService.TestWebConfig;
+import dev.charles.SimpleService.AbstractIntegrationTest;
 import dev.charles.SimpleService.errors.errorcode.CommonErrorCode;
 import dev.charles.SimpleService.errors.errorcode.ErrorCode;
-import dev.charles.SimpleService.users.controller.UsersController;
 import dev.charles.SimpleService.users.dto.UserDto;
 import dev.charles.SimpleService.users.service.UsersService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.context.WebApplicationContext;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
@@ -31,29 +30,31 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.opaqueToken;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(UsersController.class)
-@Import(TestWebConfig.class)
-class UsersControllerTest {
 
+class UsersControllerTest extends AbstractIntegrationTest {
     @Autowired
-    private MockMvc mockMvc; // HTTP 요청 시뮬레이션을 위한 객체
+    private WebApplicationContext context;
 
-
-    private ObjectMapper objectMapper = new ObjectMapper(); // JSON 직렬화를 위한 객체
+    private MockMvc mockMvc;
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     @MockitoBean
-    private UsersService usersService; // Controller의 의존성 Mocking
+    private UsersService usersService;
 
     private final UserDto testUserDto = new UserDto( "tesdt@example.com","tester");
     private final String targetEmail = "tesdt@example.com";
 
     @BeforeEach
     void setup() {
-
+        mockMvc = MockMvcBuilders
+                .webAppContextSetup(context)
+                .apply(springSecurity())
+                .build();
     }
 
     @Test
@@ -95,7 +96,7 @@ class UsersControllerTest {
                 .willReturn(mockPage);
 
         // When & Then
-        mockMvc.perform(get("/api/users/paged").with(opaqueToken())
+        mockMvc.perform(get("/api/users/paged")
                         .params(params)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
