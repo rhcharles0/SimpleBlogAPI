@@ -2,12 +2,10 @@ package dev.charles.SimpleService.posts.controller;
 
 import dev.charles.SimpleService.posts.dto.PostDto;
 import dev.charles.SimpleService.posts.service.PostsService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
@@ -30,6 +28,12 @@ public class PostsController {
     @PutMapping
     public ResponseEntity<?> update(@RequestParam(value = "id") Long id, @RequestBody PostDto postDto){
         postsService.updatePost(id, postDto);
+        return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
+    }
+
+    @DeleteMapping
+    public ResponseEntity<?> delete(@RequestParam(value = "id") Long id){
+        postsService.deletePost(id);
         return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
     }
 
