@@ -2,7 +2,7 @@
 
 🎯 Project Overview
 
-This project is a RESTful API backend service implemented using Spring Boot to realize simple user (member) management functionality. Specifically, Test-Driven Development (TDD) principles were strictly applied from the design stage to aim for robust and maintainable code.
+This project is a RESTful API backend service implemented using Spring Boot to realize simple user, post, and comment management functionality. Specifically, Test-Driven Development (TDD) principles were strictly applied from the design stage to aim for robust and maintainable code.
 Test code drives every layer, from external request validation and business logic to data persistence.
 
 📋 Prerequisites
