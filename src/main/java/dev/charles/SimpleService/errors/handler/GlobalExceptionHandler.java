@@ -40,19 +40,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(errorCode);
     }
 
-    @ExceptionHandler(AuthorizationDeniedException.class)
-    public ResponseEntity<Object> handleAuthorizationException(final AuthorizationDeniedException e) {
-        log.warn("handleAuthorization", e);
-        final ErrorCode errorCode = CustomErrorCode.NOT_AUTHORIZED;
-        return handleExceptionInternal(errorCode, e.getMessage());
-    }
-
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Object> handleConstraintViolationException(final ConstraintViolationException e) {
         ErrorCode errorCode = CommonErrorCode.INVALID_PARAMETER;
         return handleExceptionInternal(e, errorCode);
     }
-
 
     @Override
     public ResponseEntity<Object> handleMethodArgumentNotValid(

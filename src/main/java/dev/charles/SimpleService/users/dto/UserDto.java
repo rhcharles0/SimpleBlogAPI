@@ -16,7 +16,7 @@ import org.springframework.data.annotation.PersistenceCreator;
 @NoArgsConstructor
 @ToString
 public class UserDto {
-    @Length(min = 5, max = 15, message = "5이상 15이하 글자를 입력하세요.")
+    @Length(min = 2, max = 15, message = "2이상 15이하 글자를 입력하세요.")
     @Pattern(regexp = "^[a-zA-Z가-힣][a-zA-Z가-힣0-9]{4,}$", message = "올바른 이름을 입력하세요.")
     @NotBlank(message = "사용자 이름은 필수입니다.")
     private String username;

@@ -4,6 +4,7 @@ import dev.charles.SimpleService.comments.domain.Comments;
 import dev.charles.SimpleService.comments.dto.CommentsRequestDto;
 import dev.charles.SimpleService.comments.dto.CommentsResponseDto;
 import dev.charles.SimpleService.comments.repository.CommentsRepository;
+import dev.charles.SimpleService.errors.exception.NotAuthorizedException;
 import dev.charles.SimpleService.errors.exception.NotFoundResourceException;
 import dev.charles.SimpleService.posts.domain.Posts;
 import dev.charles.SimpleService.posts.repository.PostsRepository;
@@ -79,7 +80,7 @@ public class CommentsService {
 
     private void hasAuthorized(final Users user, final String email){
         if(!user.getEmail().equals(email)) {
-            throw new AuthorizationDeniedException("You're not writer on this comment.");
+            throw new NotAuthorizedException("You're not writer on this comment.");
         }
     }
 
