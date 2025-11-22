@@ -20,7 +20,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
-import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
@@ -120,8 +119,9 @@ class UsersControllerTest extends AbstractIntegrationTest {
         }
         Page<UserDto> mockPage = new PageImpl<>(userList, pageable, 10L);
         params.add("offset", "0");
+        params.add("isSearchMode", "false");
         params.add("keyword", "test");
-        given(usersService.getUsers("test", offset, null))
+        given(usersService.getUsers( false, "test", offset))
                 .willReturn(mockPage);
 
         // When & Then
@@ -134,7 +134,7 @@ class UsersControllerTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.page.totalElements").value(10)); // 페이징 메타데이터 검증
 
         // Service 호출 검증 (offset=1로 호출되었는지)
-        then(usersService).should().getUsers("test", offset, null);
+        then(usersService).should().getUsers(false, "test", offset);
     }
 
     @Nested

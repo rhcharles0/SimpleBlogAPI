@@ -5,10 +5,9 @@ import dev.charles.SimpleService.users.service.UsersService;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.web.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -51,14 +50,13 @@ public class UsersController {
 
     @GetMapping("/paged")
     ResponseEntity<Page<UserDto>> getUsers(
+            @NotNull @RequestParam(value = "isSearchMode") Boolean isSearchMode,
             @RequestParam(value = "keyword", required = false, defaultValue = "")
             final String keyword,
             @Min(value = 0, message = "최소 0 이상입니다.")
-            @RequestParam(value = "offset", defaultValue = "0")
-            final Integer offset,
-            @RequestParam(required = false)
-            final Long total){
-        Page<UserDto> users = usersService.getUsers(keyword, offset, total);
+            @RequestParam(value = "pageNumber", defaultValue = "0")
+            final Integer pageNumber){
+        Page<UserDto> users = usersService.getUsers(isSearchMode, keyword, pageNumber);
         return new ResponseEntity<>(users,HttpStatus.OK);
     }
 

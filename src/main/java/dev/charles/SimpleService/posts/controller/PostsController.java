@@ -2,6 +2,8 @@ package dev.charles.SimpleService.posts.controller;
 
 import dev.charles.SimpleService.posts.dto.PostDto;
 import dev.charles.SimpleService.posts.service.PostsService;
+import jakarta.validation.constraints.NotNull;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -44,19 +46,21 @@ public class PostsController {
     }
 
     @GetMapping(path = "/paged")
-    public ResponseEntity<?> getPostsByKeyword(@RequestParam(value = "keyword") String keyword,
-                                      @RequestParam(value = "pageNumber", defaultValue = "0") Integer pageNumber,
-                                      @RequestParam(value = "total", required= false) Long total ){
-        Page<PostDto> result = postsService.getAllPosts(keyword, pageNumber, total);
+    public ResponseEntity<Page<PostDto>> getPostsByKeyword(
+            @NotNull @RequestParam(value = "isSearchMode") Boolean isSearchMode,
+            @RequestParam(value = "keyword" , required = false) String keyword,
+            @RequestParam(value = "pageNumber", defaultValue = "0") Integer pageNumber){
+        Page<PostDto> result = postsService.getAllPosts(isSearchMode, keyword, pageNumber);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     @GetMapping(path = "/paged/user")
-    public ResponseEntity<?> getPostsByKeywordAndEmail(@RequestParam(value = "keyword") String keyword,
-                                               @RequestParam(value = "email") String email,
-                                               @RequestParam(value = "pageNumber", defaultValue = "0") Integer pageNumber,
-                                               @RequestParam(value = "total", required= false) Long total ){
-        Page<PostDto> result = postsService.getAllPostsbyUser(email,keyword, pageNumber, total);
+    public ResponseEntity<Page<PostDto>> getPostsByKeywordAndEmail(
+            @NotNull @RequestParam(value = "isSearchMode") Boolean isSearchMode,
+            @RequestParam(value = "keyword" , required = false) String keyword,
+            @NotNull @RequestParam(value = "email") String email,
+            @RequestParam(value = "pageNumber", defaultValue = "0") Integer pageNumber){
+        Page<PostDto> result = postsService.getAllPostsByUser(isSearchMode, email, keyword, pageNumber);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 

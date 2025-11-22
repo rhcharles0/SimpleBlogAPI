@@ -5,7 +5,6 @@ import dev.charles.SimpleService.posts.dto.PostDto;
 import dev.charles.SimpleService.posts.service.PostsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.shadow.com.univocity.parsers.annotations.Nested;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -134,10 +133,11 @@ class PostsControllerTest extends AbstractIntegrationTest {
             list.add(tempDto);
         }
         Page<PostDto> result = new PageImpl<>(list, PageRequest.of(0,5),5);
-        given(postsService.getAllPosts(any(),any(),any())).willReturn(result);
+        given(postsService.getAllPosts(eq(false), any(), any())).willReturn(result);
         //when, then
         mockMvc.perform(get("/api/posts/paged")
                 .contentType(MediaType.APPLICATION_JSON)
+                        .param("isSearchMode", "false")
                 .param("keyword", "hi")
                 .param("pageNumber", "1")
         )
@@ -161,9 +161,10 @@ class PostsControllerTest extends AbstractIntegrationTest {
             list.add(tempDto);
         }
         Page<PostDto> result = new PageImpl<>(list, PageRequest.of(0,5),5);
-        given(postsService.getAllPostsbyUser(any(),any(),any(),any())).willReturn(result);
+        given(postsService.getAllPostsByUser(eq(false), any(), any(), any())).willReturn(result);
         //when, then
         mockMvc.perform(get("/api/posts/paged/user")
+                        .param("isSearchMode", "false")
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("keyword", "hi")
                         .param("pageNumber", "1")
