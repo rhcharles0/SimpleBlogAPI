@@ -17,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.support.Querydsl;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -35,12 +36,8 @@ public class CustomizedCommentsRepositoryImpl extends QuerydslRepositorySupport 
 
     @Override
     public Page<CommentsResponseDto> findAllParentsByPostId(Long postId, Pageable pageable) {
-        JPAQuery<CommentsResponseDto> query = queryFactory
-                .select(new QCommentsResponseDto(comments.content
-                        ,comments.createdAt
-                        ,comments.updatedAt, new QUserDto(comments.createdBy.username,
-                        comments.createdBy.email))
-                )
+        JPAQuery<Long> idQuery = queryFactory
+                .select(comments.id)
                 .from(comments)
                 .join(comments.createdBy, users)
                 .where(
@@ -49,31 +46,55 @@ public class CustomizedCommentsRepositoryImpl extends QuerydslRepositorySupport 
                 )
                 .orderBy(comments.createdAt.desc());
 
-        JPQLQuery<CommentsResponseDto> pagination = querydsl().applyPagination(pageable,query);
-        Long totalCount = pagination.fetchCount();
-        return new PageImpl<>(pagination.fetch(), pageable, totalCount);
+        JPQLQuery<Long> paginationId = querydsl().applyPagination(pageable, idQuery);
+        List<Long> ids = paginationId.fetch();
+
+        if(ids.isEmpty()){
+            return new PageImpl<>(new ArrayList<>(), pageable, 0);
+        }
+
+        JPAQuery<CommentsResponseDto> query = queryFactory
+                .select( new QCommentsResponseDto(comments.content, comments.createdAt, comments.updatedAt,
+                                new QUserDto( comments.createdBy.username,
+                                        comments.createdBy.email)))
+                .from(comments)
+                .where(comments.id.in(ids))
+                .orderBy(comments.id.desc());
+        List<CommentsResponseDto> contents = query.fetch();
+        Long totalCount = paginationId.fetchCount();
+        return new PageImpl<>(contents, pageable, totalCount);
     }
 
     @Override
     public Page<CommentsResponseDto> findAllChildrenByParentId(Long parentId, Pageable pageable) {
-        JPAQuery<CommentsResponseDto> query = queryFactory
-                .select(Projections.fields(CommentsResponseDto.class
-                        ,comments.content
-                        ,comments.createdAt
-                        ,comments.updatedAt
-                        ,Projections.fields(UserDto.class,
-                                comments.createdBy.username,
-                                comments.createdBy.email).as("createdBy"))
-                )
+        JPAQuery<Long> idQuery = queryFactory
+                .select(comments.id)
                 .from(comments)
                 .join(comments.createdBy, users)
                 .where(
                         comments.parentComment.id.eq(parentId)
                 )
                 .orderBy(comments.createdAt.desc());
-        JPQLQuery<CommentsResponseDto> pagination = querydsl().applyPagination(pageable, query);
-        Long totalCount = pagination.fetchCount();
-        return new PageImpl<>(pagination.fetch(), pageable, totalCount);
+
+        JPQLQuery<Long> paginationId = querydsl().applyPagination(pageable, idQuery);
+        List<Long> ids = paginationId.fetch();
+
+        if(ids.isEmpty()){
+            return new PageImpl<>(new ArrayList<>(), pageable, 0);
+        }
+        JPAQuery<CommentsResponseDto> query = queryFactory
+                .select( new QCommentsResponseDto(comments.content, comments.createdAt, comments.updatedAt,
+                        new QUserDto( comments.createdBy.username,
+                                comments.createdBy.email)))
+                .from(comments)
+                .join(comments.createdBy, users)
+                .where(
+                        comments.id.in(ids)
+                )
+                .orderBy(comments.createdAt.desc());
+        List<CommentsResponseDto> contents = query.fetch();
+        Long totalCount = paginationId.fetchCount();
+        return new PageImpl<>(contents, pageable, totalCount);
     }
 
     private Querydsl querydsl() {

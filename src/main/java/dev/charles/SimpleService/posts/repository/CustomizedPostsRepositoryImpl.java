@@ -7,13 +7,15 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import dev.charles.SimpleService.posts.domain.Posts;
 import dev.charles.SimpleService.posts.dto.PostDto;
-import dev.charles.SimpleService.utils.FixedPageRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.support.Querydsl;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -29,43 +31,50 @@ public class CustomizedPostsRepositoryImpl extends QuerydslRepositorySupport imp
     }
 
     private BooleanExpression likeIgnoreCase(String keyword) {
-        if(isNotBlank(keyword)) return posts.title.likeIgnoreCase("%" + keyword + "%");
-        return null;
-    }
-
-    private boolean isNotBlank(String keyword) {
-        return Optional.ofNullable(keyword).filter(k ->
-                        !k.isBlank())
-                .isPresent();
+        if(Optional.ofNullable(keyword).isEmpty()) return null;
+        return posts.title.likeIgnoreCase("%" + keyword + "%");
     }
 
     @Override
     public Page<PostDto> findAllByKeyword(boolean isSearchMode, String keyword, Pageable pageable) {
+
+        JPAQuery<Long> idQuery = queryFactory
+                .select(posts.id)
+                .from(posts)
+                .where(
+                        likeIgnoreCase(keyword)
+                )
+                .orderBy(posts.id.desc());
+        JPQLQuery<Long> paginationId = querydsl().applyPagination(pageable, idQuery);
+        List<Long> ids = paginationId.fetch();
+
+        if(ids.isEmpty()){
+            return new PageImpl<>(new ArrayList<>(), PageRequest.of(0,10), 0);
+        }
+
         JPAQuery<PostDto> query = queryFactory.select(Projections.fields(PostDto.class,
                                         posts.title,
                                         posts.content))
                                 .from(posts)
                                 .where(
-                                        likeIgnoreCase(keyword)
+                                        posts.id.in(ids)
                                 )
                                 .orderBy(posts.id.desc());
-        JPQLQuery<PostDto> pagination = querydsl().applyPagination(pageable, query);
 
+        List<PostDto> content = query.fetch();
         if(isSearchMode) {
             int fixedPageCount = 10 * pageable.getPageSize();
-            return new PageImpl<>(pagination.fetch(), pageable, fixedPageCount);
+            return new PageImpl<>(content, pageable, fixedPageCount);
         }
-        Long totalCount = pagination.fetchCount();
-        Pageable pageRequest = new FixedPageRequest(pageable, totalCount);
-        return new PageImpl<>(querydsl().applyPagination(pageRequest, query).fetch(), pageRequest, totalCount);
+
+        long totalCount = paginationId.fetchCount();
+        return new PageImpl<>(content, pageable, totalCount);
     }
 
     @Override
     public Page<PostDto> findAllByKeywordAndEmail(boolean isSearchMode, String keyword, String email, Pageable pageable) {
-        JPAQuery<PostDto> query = queryFactory
-                .select(Projections.fields(PostDto.class,
-                        posts.title,
-                        posts.content))
+        JPAQuery<Long> idQuery = queryFactory
+                .select(posts.id)
                 .from(posts)
                 .join(posts.createdBy, users)
                 .where(
@@ -73,18 +82,34 @@ public class CustomizedPostsRepositoryImpl extends QuerydslRepositorySupport imp
                         users.email.eq(email)
                 )
                 .orderBy(posts.id.desc());
+        JPQLQuery<Long> paginationId = querydsl().applyPagination(pageable, idQuery);
+        List<Long> ids = paginationId.fetch();
 
-        JPQLQuery<PostDto> pagination = querydsl().applyPagination(pageable, query);
+        if(ids.isEmpty()){
+            return new PageImpl<>(new ArrayList<>(), PageRequest.of(0,10), 0);
+        }
+        JPAQuery<PostDto> query = queryFactory
+                .select(Projections.fields(PostDto.class,
+                        posts.title,
+                        posts.content))
+                .from(posts)
+                .join(posts.createdBy, users)
+                .where(
+                       posts.id.in(ids)
+                )
+                .orderBy(posts.id.desc());
+
+        List<PostDto> content = query.fetch();
 
         if(isSearchMode) {
             int fixedPageCount = 10 * pageable.getPageSize();
-            return new PageImpl<>(pagination.fetch(), pageable, fixedPageCount);
+            return new PageImpl<>(content, pageable, fixedPageCount);
         }
-        Long totalCount = pagination.fetchCount();
-        Pageable pageRequest = new FixedPageRequest(pageable, totalCount);
-        return new PageImpl<>(querydsl().applyPagination(pageRequest, query).fetch(), pageRequest, totalCount);
+        long totalCount = paginationId.fetchCount();
+        return new PageImpl<>(content, pageable, totalCount);
 
     }
+
     private Querydsl querydsl() {
         return Objects.requireNonNull(getQuerydsl());
     }
