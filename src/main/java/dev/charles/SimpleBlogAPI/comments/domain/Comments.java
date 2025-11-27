@@ -1,9 +1,8 @@
-package dev.charles.SimpleService.comments.domain;
+package dev.charles.SimpleBlogAPI.comments.domain;
 
-import dev.charles.SimpleService.comments.dto.CommentsRequestDto;
-import dev.charles.SimpleService.posts.domain.Posts;
-import dev.charles.SimpleService.users.domain.BaseEntity;
-import dev.charles.SimpleService.users.domain.Users;
+import dev.charles.SimpleBlogAPI.posts.domain.Posts;
+import dev.charles.SimpleBlogAPI.users.domain.BaseEntity;
+import dev.charles.SimpleBlogAPI.users.domain.Users;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -32,7 +31,7 @@ public class Comments extends BaseEntity {
     private Posts post;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "created_by_id", nullable = false)
     private Users createdBy;
 
     @ManyToOne(fetch = FetchType.LAZY)
