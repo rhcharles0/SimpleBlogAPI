@@ -1,11 +1,11 @@
-package dev.charles.SimpleService.users.repository;
+package dev.charles.SimpleBlogAPI.users.repository;
 
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import dev.charles.SimpleService.users.domain.Users;
-import dev.charles.SimpleService.users.dto.QUserDto;
-import dev.charles.SimpleService.users.dto.UserDto;
+import dev.charles.SimpleBlogAPI.users.domain.Users;
+import dev.charles.SimpleBlogAPI.users.dto.QUserDto;
+import dev.charles.SimpleBlogAPI.users.dto.UserDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static dev.charles.SimpleService.users.domain.QUsers.users;
+import static dev.charles.SimpleBlogAPI.users.domain.QUsers.users;
 
 public class CustomizedUsersRepositoryImpl extends QuerydslRepositorySupport implements CustomizedUsersRepository{
     private final JPAQueryFactory queryFactory;
@@ -53,7 +53,11 @@ public class CustomizedUsersRepositoryImpl extends QuerydslRepositorySupport imp
             int fixedPageCount = 10 * pageable.getPageSize();
             return new PageImpl<>(contents, pageable, fixedPageCount);
         }
-        Long totalCount = paginationId.fetchCount();
+        Long totalCount = queryFactory
+                .select(users.id.count())
+                .from(users)
+                .where(users.username.likeIgnoreCase("%"+keyword + "%"))
+                .fetchOne();
         return new PageImpl<>(contents, pageable, totalCount);
     }
 
